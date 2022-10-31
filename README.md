@@ -26,4 +26,4 @@ https://developyo.tistory.com/252
 
 2. spring boot 로 변경 예정 https://oingdaddy.tistory.com/21
 3. 화면
-http://localhost:8080/batch/schedules.do
+http://localhost:8080/batch/schedules.do 
