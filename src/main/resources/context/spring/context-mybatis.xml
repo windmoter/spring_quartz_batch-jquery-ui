@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:mybatis="http://mybatis.org/schema/mybatis-spring" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.1.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd 
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.1.xsd
+		http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring.xsd">
+	
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+    	<property name="dataSource" ref="dataSource" />
+    	<property name="configLocation" value="classpath:context/sqlmap/mybatis-config.xml" />
+    </bean>
+    
+    <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate" destroy-method="clearCache">
+    	<constructor-arg ref="sqlSessionFactory" />
+    </bean>
+    
+        <mybatis:scan base-package="batch.mapper.inf ,batch.mapper.mgr"   />
+    
+	<!-- INF  
+	<bean id="inf" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+    	<property name="configLocation" value="classpath:context/sqlmap/mybatis-config.xml" /> 
+		<property name="mapperLocations">
+			<array>
+				<value>classpath:batch/job/**/mapper/*SQL.xml</value>
+				<value>classpath:batch/mapper/inf/*.xml</value>
+			</array>
+		</property>
+	</bean> -->
+ 
+
+	<!-- INF 테이블 관련 작업(Mapper) Scan 
+    <mybatis:scan base-package="batch.mapper.inf , batch.job.**.mapperMgr" factory-ref="inf" />-->
+
+	<!-- MGR 
+	<bean id="mgr" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+    	<property name="configLocation" value="classpath:context/sqlmap/mybatis-config.xml" /> 
+		<property name="mapperLocations">
+			<array>
+				<value>classpath:batch/job/**/mapper/*SQL.xml</value>
+				<value>classpath:batch/mapper/mgr/*.xml</value>
+			</array>
+		</property>
+	</bean> -->
+
+	<!-- MGR 테이블 관련 작업(Mapper) Scan 
+	<mybatis:scan base-package="batch.mapper.mgr,  batch.job.**.mapperMgr" factory-ref="mgr" />-->
+    
+    
+</beans>

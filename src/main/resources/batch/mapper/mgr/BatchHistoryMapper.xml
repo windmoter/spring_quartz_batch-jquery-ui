@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="batch.mapper.mgr.BatchHistoryMapper">
+    <select id="retrieveBatchHistory" resultType="java.util.Map">
+        <![CDATA[
+		SELECT BATCH_HISTORY_ID AS batchHistoryId
+             , BATCH_USER_ID AS batchUserId
+             , PROGRAM_TYPE_CODE AS programTypeCode
+             , BIZ_SCTN_CODE AS bizSctnCode
+             , BATCH_ID AS batchId
+             , CLS_YYYYMMDD AS clsYyyymmdd
+             , BATCH_DESC AS batchDesc
+             , DATE_FORMAT(BATCH_START_DATE,'%Y/%m/%d %H:%i:%s') AS batchStartDate
+             , DATE_FORMAT(BATCH_END_DATE,'%Y/%m/%d %H:%i:%s') AS batchEndDate
+             , SUCCESS_FLAG AS successFlag
+             , BATCH_DATA_COUNT AS batchDataCount
+             , BATCH_RESULT_CONTENT AS batchResultContent
+             , SESSION_INFO_CONTENT AS sessionInfoContent
+             , DB_ERROR_CODE AS dbErrorCode
+             , DB_ERROR_DESC AS dbErrorDesc
+          FROM LGECOKR_MGR_PUBL.MKT_BATCH_H
+         WHERE 1=1
+		]]>
+        <if test='queryBatchId != null and queryBatchId != ""'>
+            AND BATCH_ID = #{queryBatchId}
+        </if>
+        <if test='querySuccessFlag != null and querySuccessFlag != ""'>
+            AND SUCCESS_FLAG = #{querySuccessFlag}
+        </if>
+        <if test='queryBatchHistoryId != null and queryBatchHistoryId != ""'>
+            AND BATCH_HISTORY_ID = #{queryBatchHistoryId}
+        </if>
+        <if test='queryBatchUserId != null and queryBatchUserId != ""'>
+            AND BATCH_USER_ID = #{queryBatchUserId}
+        </if>
+        <if test='queryBatchStartDate != null and queryBatchStartDate != ""'>
+            <![CDATA[
+		   AND BATCH_START_DATE >= STR_TO_DATE(REGEXP_REPLACE(CONCAT(#{queryBatchStartDate},'000000'),'[/-]',''), '%Y%m%d%H%i%s')
+		]]>
+        </if>
+        <if test='queryBatchEndDate != null and queryBatchEndDate != ""'>
+            <![CDATA[
+		   AND BATCH_END_DATE <= STR_TO_DATE(REGEXP_REPLACE(CONCAT(#{queryBatchEndDate},'235959'),'[/-]',''), '%Y%m%d%H%i%s')
+		]]>
+        </if>
+        <if test='queryBatDesc != null and queryBatDesc != ""'>
+            AND BATCH_DESC LIKE CONCAT('%',#{queryBatDesc},'%')
+        </if>
+    </select>
+
+    <select id="getBatchHistoryId" resultType="java.util.Map" >
+    <![CDATA[
+    	SELECT NEXTVAL(LGECOKR_MGR_PUBL.SQ_BATCH_HISTORY_ID) as batchHistoryId
+    ]]>
+    </select>
+
+    <update id="updateBatchHistory" parameterType="java.util.Map" >
+        <![CDATA[
+		UPDATE LGECOKR_MGR_PUBL.MKT_BATCH_H
+		   SET BATCH_USER_ID = #{batchUserId}
+             , PROGRAM_TYPE_CODE = #{programTypeCode}
+             , BIZ_SCTN_CODE = #{bizSctnCode}
+             , batch_id = #{batchId}
+             , cls_YYYYMMDD = #{clsYyyyMmDd}
+             , BATCH_DESC = #{batchDesc}
+             , BATCH_START_DATE = str_to_date(#{batchStartDate}, '%Y%m%d%H%i%s')
+     ]]>
+
+        <if test='batchEndDate != null and batchEndDate != ""'>
+            <![CDATA[, BATCH_END_DATE = str_to_date(#{batchEndDate},'%Y%m%d%H%i%s')]]>
+        </if>
+        <![CDATA[
+             , SUCCESS_FLAG = #{successFlag}
+             , BATCH_DATA_COUNT = #{batchDataCount}
+             , BATCH_RESULT_CONTENT = #{batchResultContent}
+             , SESSION_INFO_CONTENT = #{sessionInfoContent}
+             , DB_ERROR_CODE = #{dbErrorCode}
+             , DB_ERROR_DESC = #{dbErrorDesc}
+         WHERE BATCH_HISTORY_ID = #{batchHistoryId}
+    ]]>
+    </update>
+
+    <insert id="createBatchHistory" parameterType="java.util.Map" >
+    <![CDATA[
+    	INSERT INTO LGECOKR_MGR_PUBL.MKT_BATCH_H (
+    			BATCH_HISTORY_ID
+    		  , BATCH_USER_ID
+    		  , PROGRAM_TYPE_CODE
+    		  , BIZ_SCTN_CODE
+    		  , BATCH_ID
+    		  , CLS_YYYYMMDD
+    		  , BATCH_DESC
+    		  , BATCH_START_DATE
+    		  , BATCH_END_DATE
+    		  , SUCCESS_FLAG
+    		  , BATCH_DATA_COUNT
+    		  , BATCH_RESULT_CONTENT
+    		  , SESSION_INFO_CONTENT
+    		  , DB_ERROR_CODE
+    		  , DB_ERROR_DESC)
+		VALUES (
+				#{batchHistoryId}
+			  , #{batchUserId}
+			  , #{programTypeCode}
+			  , #{bizSctnCode}
+			  , #{batchId}
+			  , #{clsYyyyMmDd}
+			  , #{batchDesc}
+			  , STR_TO_DATE(${batchStartDate},'%Y%m%d%H%i%s')
+			  , STR_TO_DATE(${batchEndDate},'%Y%m%d%H%i%s')
+			  , #{successFlag}
+			  , #{batchDataCount}
+			  , #{batchResultContent}
+			  , #{sessionInfoContent}
+			  , #{dbErrorCode}
+			  , #{dbErrorDesc})
+    ]]>
+    </insert>
+</mapper>

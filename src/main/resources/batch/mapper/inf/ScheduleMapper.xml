@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="batch.mapper.inf.ScheduleMapper">
+    <select id="getSchedules" parameterType="hashMap" resultType="Schedule">
+        SELECT S.BATCH_SCHE_NO
+             , S.BATCH_WORK_NO
+             , S.CRON_EXPRESSION
+             , S.BATCH_JOB_PARAM
+             , S.EXEC_PRD_TP
+             , NVL(S.EXEC_SS, '0') AS EXEC_SS
+             , NVL(S.EXEC_MI, '*') AS EXEC_MI
+             , NVL(S.EXEC_HI, '*') AS EXEC_HI
+             , CASE WHEN S.EXEC_DD = null THEN '*'
+                    WHEN S.EXEC_DD = 99   THEN 'L'
+                    ELSE S.EXEC_DD
+                    END AS EXEC_DD
+             , NVL(S.EXEC_MM, '*')         AS EXEC_MM
+             , NVL(S.EXEC_YY, '*')         AS EXEC_YY
+             , NVL(S.DAY_OF_WEEK, '*')     AS DAY_OF_WEEK
+             , J.BATCH_PGM_PATH            AS PGM_PATH
+             , NVL(S.BATCH_JOB_PARAM, ' ') AS PGM_PARAM
+             , S.RMK
+             , S.UP_DT
+             , S.DESCRIPTION AS DESCRIPTION <!-- BTOCSITE-7195 -->
+          FROM BATCH_SCHEDULE S, BATCH_JOB J
+         WHERE S.BATCH_WORK_NO = J.BATCH_WORK_NO
+           AND J.USE_YN = 'Y'
+           <if test="ids != null">
+           AND BATCH_SCHE_NO IN
+               <foreach item="id" collection="ids" open="(" separator="," close=")">
+                   #{id}
+               </foreach>
+           </if>
+         ORDER BY BATCH_SCHE_NO
+    </select>
+
+    <insert id="putSchedule" parameterType="Schedule">
+        <selectKey keyProperty="batchScheNo" resultType="String" order="BEFORE">
+            SELECT NVL(MAX(B.BATCH_SCHE_NO)
+                 , CONCAT(DATE_FORMAT(SYSDATE(),'%Y%m%d'),'00')) + 1
+              FROM BATCH_SCHEDULE B
+             WHERE B.BATCH_SCHE_NO LIKE CONCAT(DATE_FORMAT(SYSDATE(),'%Y%m%d'),'%')
+        </selectKey>
+
+        INSERT INTO BATCH_SCHEDULE (
+               BATCH_SCHE_NO
+             , BATCH_WORK_NO
+             , CRON_EXPRESSION
+             , BATCH_JOB_PARAM
+             , EXEC_PRD_TP
+             , EXEC_YY
+             , EXEC_MM
+             , EXEC_DD
+             , EXEC_HI
+             , EXEC_MI
+             , EXEC_SS
+             , DAY_OF_WEEK
+             , RMK
+             , IN_DT
+             , IN_ID
+             , UP_DT
+             , UP_ID
+             , DESCRIPTION <!-- BTOCSITE-7195 -->
+        ) VALUES (
+               #{batchScheNo}
+             , #{batchWorkNo}
+             , #{cronExpression}
+             , #{batchJobParam}
+             , #{execPrdTp}
+             , #{execYy}
+             , #{execMm}
+             , #{execDd}
+             , #{execHi}
+             , #{execMi}
+             , #{execSs}
+             , #{dayOfWeek}
+             , #{rmk}
+             , SYSDATE()
+             , #{id}
+             , SYSDATE()
+             , #{id}
+             , #{description} <!-- BTOCSITE-7195 -->
+        )
+    </insert>
+
+    <update id="modifySchedule" parameterType="Schedule">
+		UPDATE BATCH_SCHEDULE
+		   SET EXEC_PRD_TP = #{execPrdTp}
+		     , RMK = #{rmk}
+		     , CRON_EXPRESSION = #{cronExpression}
+		     , DAY_OF_WEEK = #{dayOfWeek}
+		     , BATCH_JOB_PARAM = #{batchJobParam}
+		     , UP_DT = SYSDATE()
+		     , UP_ID = #{id}
+		     , DESCRIPTION = #{description} <!-- BTOCSITE-7195 -->
+		 WHERE BATCH_SCHE_NO = #{batchScheNo}
+	</update>
+
+    <delete id="deleteSchedule" parameterType="String">
+        DELETE FROM BATCH_SCHEDULE
+              WHERE BATCH_SCHE_NO = #{batchWorkNo}
+    </delete>
+
+    <insert id="putJob" parameterType="BatchJob">
+		INSERT INTO BATCH_JOB (
+		       BATCH_WORK_NO
+		     , BATCH_WORK_NM
+		     , BATCH_PARAM
+		     , USE_YN
+		     , RMK
+		     , IN_DT
+		     , IN_ID
+		     , UP_DT
+		     , UP_ID
+		) VALUES (
+			   #{batchWorkNo}
+			 , #{batchWorkNm}
+			 , #{batchParam}
+			 , 'Y'
+			 , #{rmk}
+			 , SYSDATE()
+			 , #{id}
+			 , SYSDATE()
+			 , #{id}
+		)
+	</insert>
+
+    <select id="getJob" parameterType="String" resultType="BatchJob">
+        SELECT BATCH_WORK_NO
+             , BATCH_WORK_NM
+             , BATCH_PARAM
+             , USE_YN
+             , RMK
+             , IN_DT
+             , IN_ID
+             , UP_DT
+             , UP_ID
+          FROM BATCH_JOB
+         WHERE BATCH_WORK_NO = #{batchWorkNo}
+    </select>
+    
+    <select id="getStartTime" parameterType="java.lang.String" resultType="java.util.Map" >
+    <![CDATA[
+    	select max(START_TIME) as startTime 
+    	  from BATCH_STEP_EXECUTION 
+    	 where STEP_NAME  = #{stepName} 
+    	   and EXIT_CODE = 'COMPLETED'
+    ]]>
+    </select>
+</mapper>

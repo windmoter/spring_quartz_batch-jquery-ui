@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd
+	                       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	                       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd"	>
+
+    <job id="TestJob" restartable="true" xmlns="http://www.springframework.org/schema/batch">
+        <step id="test-step">
+            <tasklet ref="testTasklet" transaction-manager="transactionManager">
+            </tasklet>
+        </step>
+    </job>
+    <bean id="testTask" class="com.spring.batch.job.test.biz.TestTask"/>
+    <bean id="testTasklet" class="com.spring.batch.job.test.biz.TestTasklet" scope="step" />
+</beans>
